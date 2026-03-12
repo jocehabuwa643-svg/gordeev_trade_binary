@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Стратегия Гордеева - PRO MAX</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Oswald:wght@300;400;500;600;700&display=swap');
+        
+        body { 
+            margin: 0; padding: 0; 
+            background-color: #05020a; /* Еще более глубокий черный */
+            color: #f8fafc; 
+            overflow: hidden; 
+            touch-action: manipulation;
+            -webkit-font-smoothing: antialiased;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .oswald-font { 
+            font-family: 'Oswald', sans-serif; 
+            letter-spacing: 0.05em; 
+            text-transform: uppercase;
+        }
+
+        .bg-grid-pattern {
+            background-image: 
+                linear-gradient(to right, rgba(168, 85, 247, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(168, 85, 247, 0.04) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+
+        /* Более сложные и красивые орбы */
+        .bg-orb-1 {
+            position: absolute; top: -15%; left: -10%; width: 60vw; height: 60vw;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(168, 85, 247, 0.05) 40%, transparent 70%);
+            border-radius: 50%; filter: blur(70px); animation: float 18s ease-in-out infinite alternate;
+        }
+        .bg-orb-2 {
+            position: absolute; bottom: -20%; right: -15%; width: 70vw; height: 70vw;
+            background: radial-gradient(circle, rgba(217, 70, 239, 0.1) 0%, rgba(192, 132, 252, 0.05) 50%, transparent 70%);
+            border-radius: 50%; filter: blur(90px); animation: float 22s ease-in-out infinite alternate-reverse;
+        }
+        .bg-orb-3 {
+            position: absolute; top: 40%; left: 50%; width: 40vw; height: 40vw; transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
+            border-radius: 50%; filter: blur(50px);
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(4%, 6%) scale(1.08); }
+            100% { transform: translate(-3%, -4%) scale(0.92); }
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 25px -5px rgba(168, 85, 247, 0.3), inset 0 0 15px rgba(168, 85, 247, 0.1); }
+            50% { box-shadow: 0 0 45px 5px rgba(168, 85, 247, 0.5), inset 0 0 25px rgba(168, 85, 247, 0.2); }
+        }
+        .premium-glow { animation: pulse-glow 3s infinite; }
+
+        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .ticker-wrapper { display: flex; width: max-content; animation: ticker 40s linear infinite; }
+        
+        @keyframes scanline { 
+            0% { transform: translateY(-100%); opacity: 0; } 
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(400%); opacity: 0; } 
+        }
+        .scanline-anim { 
+            animation: scanline 2s cubic-bezier(0.4, 0, 0.2, 1) infinite; 
+            background: linear-gradient(to bottom, transparent, rgba(192, 132, 252, 0.4), transparent); 
+        }
+        
+        @keyframes arrow-premium-pulse { 
+            0%, 100% { transform: scale(0.95); filter: drop-shadow(0 0 15px currentColor); } 
+            50% { transform: scale(1.15); filter: drop-shadow(0 0 35px currentColor); } 
+        }
+        .animate-arrow-premium { animation: arrow-premium-pulse 2s ease-in-out infinite; }
+        
+        /* Улучшенные стеклянные панели с тонкими границами */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(26, 15, 46, 0.75) 0%, rgba(15, 8, 28, 0.85) 100%);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-top: 1px solid rgba(216, 180, 254, 0.15);
+            border-left: 1px solid rgba(216, 180, 254, 0.1);
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.8);
+        }
+        
+        .glass-panel-heavy {
+            background: linear-gradient(to bottom right, rgba(30, 18, 52, 0.85), rgba(12, 6, 22, 0.95));
+            backdrop-filter: blur(45px);
+            -webkit-backdrop-filter: blur(45px);
+            border: 1px solid rgba(192, 132, 252, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: linear-gradient(145deg, rgba(45, 27, 78, 0.6) 0%, rgba(20, 10, 35, 0.4) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.15);
+            box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(192, 132, 252, 0.3);
+            background: linear-gradient(145deg, rgba(55, 33, 94, 0.7) 0%, rgba(25, 12, 45, 0.5) 100%);
+        }
+
+        .ios-text { text-shadow: 0 2px 5px rgba(0,0,0,0.9); }
+        .text-gradient {
+            background: linear-gradient(to right, #e9d5ff, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .status-pass { color: #e9d5ff !important; text-shadow: 0 0 12px rgba(233, 213, 255, 0.6) !important; animation: pulse 2s infinite; }
+        .status-prep { color: #d8b4fe !important; text-shadow: 0 0 12px rgba(216, 180, 254, 0.6) !important; animation: pulse 1s infinite; }
+        .status-tf { color: #c084fc !important; text-shadow: 0 0 12px rgba(192, 132, 252, 0.5) !important; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const Shield = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 4.81 17 6 19 6a1 1 0 0 1 1 1z"/></svg>;
+        const Cpu = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>;
+        const Globe = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>;
+        const Clock = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+        const TrendingUp = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>;
+
+        const ASSETS = [
+          { pair: 'AUD/CAD', symbol: 'frxAUDCAD', name: 'AUD/CAD', voiceName: 'австралийский доллар канадский доллар' },
+          { pair: 'AUD/CHF', symbol: 'frxAUDCHF', name: 'AUD/CHF', voiceName: 'австралийский доллар швейцарский франк' },
+          { pair: 'AUD/JPY', symbol: 'frxAUDJPY', name: 'AUD/JPY', voiceName: 'австралийский доллар японская иена' },
+          { pair: 'AUD/NZD', symbol: 'frxAUDNZD', name: 'AUD/NZD', voiceName: 'австралийский доллар новозеландский доллар' },
+          { pair: 'AUD/USD', symbol: 'frxAUDUSD', name: 'AUD/USD', voiceName: 'австралийский доллар доллар США' },
+          { pair: 'CAD/JPY', symbol: 'frxCADJPY', name: 'CAD/JPY', voiceName: 'канадский доллар японская иена' },
+          { pair: 'EUR/AUD', symbol: 'frxEURAUD', name: 'EUR/AUD', voiceName: 'евро австралийский доллар' },
+          { pair: 'EUR/CAD', symbol: 'frxEURCAD', name: 'EUR/CAD', voiceName: 'евро канадский доллар' },
+          { pair: 'EUR/CHF', symbol: 'frxEURCHF', name: 'EUR/CHF', voiceName: 'евро швейцарский франк' },
+          { pair: 'EUR/GBP', symbol: 'frxEURGBP', name: 'EUR/GBP', voiceName: 'евро британский фунт' },
+          { pair: 'EUR/JPY', symbol: 'frxEURJPY', name: 'EUR/JPY', voiceName: 'евро японская иена' },
+          { pair: 'EUR/USD', symbol: 'frxEURUSD', name: 'EUR/USD', voiceName: 'евро доллар США' },
+          { pair: 'GBP/AUD', symbol: 'frxGBPAUD', name: 'GBP/AUD', voiceName: 'британский фунт австралийский доллар' },
+          { pair: 'GBP/CHF', symbol: 'frxGBPCHF', name: 'GBP/CHF', voiceName: 'британский фунт швейцарский франк' },
+          { pair: 'GBP/JPY', symbol: 'frxGBPJPY', name: 'GBP/JPY', voiceName: 'британский фунт японская иена' },
+          { pair: 'GBP/NZD', symbol: 'frxGBPNZD', name: 'GBP/NZD', voiceName: 'британский фунт новозеландский доллар' },
+          { pair: 'NZD/JPY', symbol: 'frxNZDJPY', name: 'NZD/JPY', voiceName: 'новозеландский доллар японская иена' },
+          { pair: 'NZD/USD', symbol: 'frxNZDUSD', name: 'NZD/USD', voiceName: 'новозеландский доллар доллар США' },
+          { pair: 'USD/CAD', symbol: 'frxUSDCAD', name: 'USD/CAD', voiceName: 'доллар США канадский доллар' },
+          { pair: 'USD/CHF', symbol: 'frxUSDCHF', name: 'USD/CHF', voiceName: 'доллар США швейцарский франк' },
+          { pair: 'USD/JPY', symbol: 'frxUSDJPY', name: 'USD/JPY', voiceName: 'доллар США японская иена' }
+        ];
+
+        const FALLBACK_NEWS = [
+          "СТРАТЕГИЯ ГОРДЕЕВА PRO MAX: УЛУЧШЕННЫЙ АЛГОРИТМ",
+          "СКРЫТЫЕ ФИЛЬТРЫ ТРЕНДА ОБЕСПЕЧИВАЮТ ЧИСТЫЕ СИГНАЛЫ",
+          "ЗАЩИТА ОТ БОКОВИКА: ВХОД ТОЛЬКО НА ПОДТВЕРЖДЕННОМ ИМПУЛЬСЕ",
+          "СИСТЕМА ИСПОЛЬЗУЕТ ДИНАМИЧЕСКУЮ ЭКСПИРАЦИЮ",
+          "СНАЙПЕРСКИЙ РЕЖИМ: МГНОВЕННОЕ ИСПОЛНЕНИЕ БЕЗ ЗАДЕРЖЕК"
+        ];
+
+        const ScannerAPI = {
+          ws: null, callbacks: {}, reqId: 1,
+          async connect() {
+            if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
+                if (this.ws.readyState === WebSocket.OPEN) return;
+                return new Promise(res => {
+                    const check = setInterval(() => {
+                        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                            clearInterval(check);
+                            res();
+                        }
+                    }, 100);
+                });
+            }
+            return new Promise(res => {
+              this.ws = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=1089');
+              this.ws.onopen = res;
+              this.ws.onmessage = (msg) => {
+                const data = JSON.parse(msg.data);
+                if (data.req_id && this.callbacks[data.req_id]) {
+                  this.callbacks[data.req_id](data);
+                  delete this.callbacks[data.req_id];
+                }
+              };
+              this.ws.onerror = () => { this.ws = null; res(); };
+              this.ws.onclose = () => { this.ws = null; };
+            });
+          },
+          async getCandles(symbol, count = 250, granularity = 60) { 
+            await this.connect();
+            return new Promise(res => {
+              const id = this.reqId++;
+              const timeout = setTimeout(() => res([]), 5000);
+              this.callbacks[id] = (data) => {
+                clearTimeout(timeout);
+                if (!data || !data.candles) return res([]);
+                
+                const unique = [];
+                let lastTime = 0;
+                
+                const sortedCandles = [...data.candles].sort((a, b) => a.epoch - b.epoch);
+                sortedCandles.forEach(c => {
+                    if (c.open === null || c.high === null || c.low === null || c.close === null) return;
+                    const t = c.epoch;
+                    const candle = { time: t, open: Number(c.open), high: Number(c.high), low: Number(c.low), close: Number(c.close) };
+                    
+                    if (isNaN(candle.open) || isNaN(candle.high) || isNaN(candle.low) || isNaN(candle.close)) return;
+
+                    if (t > lastTime) {
+                        unique.push(candle);
+                        lastTime = t;
+                    } else if (t === lastTime && unique.length > 0) {
+                        unique[unique.length - 1] = candle;
+                    }
+                });
+                res(unique);
+              };
+              if (this.ws?.readyState === WebSocket.OPEN) {
+                this.ws.send(JSON.stringify({ ticks_history: symbol, end: 'latest', count, style: 'candles', granularity, req_id: id }));
+              } else res([]);
+            });
+          }
+        };
+
+        // Внутренние функции вычислений засекречены (без названий в логах)
+        function calcBaseFilter(data, period) {
+            let res = [];
+            for (let i = period - 1; i < data.length; i++) {
+                let sum = 0;
+                for (let j = 0; j < period; j++) {
+                    sum += data[i - j].close;
+                }
+                let val = sum / period;
+                if (!isNaN(val) && isFinite(val)) {
+                    res.push({ time: data[i].time, value: val });
+                }
+            }
+            return res;
+        }
+
+        function calcVol(data, period = 14) {
+            if (data.length < period + 1) return 0;
+            let sumTR = 0;
+            for (let i = 1; i <= period; i++) {
+                const c = data[data.length - i];
+                const prev = data[data.length - 1 - i];
+                if (!c || !prev) continue;
+                const tr = Math.max(
+                    c.high - c.low,
+                    Math.abs(c.high - prev.close),
+                    Math.abs(c.low - prev.close)
+                );
+                sumTR += tr;
+            }
+            return sumTR / period;
+        }
+
+        function calcMomentum(data, period) {
+            if (!data || data.length === 0) return [];
+            let res = [];
+            const k = 2 / (period + 1);
+            
+            let sum = 0;
+            let count = Math.min(period, data.length);
+            for(let i = 0; i < count; i++) {
+                sum += data[i].close;
+            }
+            let ema = sum / count;
+            
+            for (let i = 0; i < data.length; i++) {
+                if (i < period) {
+                    res.push({ time: data[i].time, value: ema });
+                } else {
+                    ema = (data[i].close - ema) * k + ema;
+                    res.push({ time: data[i].time, value: ema });
+                }
+            }
+            return res;
+        }
+
+        function calcStrength(data, period = 14) {
+            let res = [];
+            if(data.length <= period) return data.map(d => ({time: d.time, value: 50}));
+            
+            let gains = 0, losses = 0;
+            for(let i = 1; i <= period; i++) {
+                let change = data[i].close - data[i-1].close;
+                if(change > 0) gains += change;
+                else losses -= change;
+            }
+            
+            let avgGain = gains / period;
+            let avgLoss = losses / period;
+            let rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+            let initialRsi = 100 - (100 / (1 + rs));
+            
+            for(let i=0; i<=period; i++) {
+                res.push({time: data[i].time, value: initialRsi});
+            }
+
+            for(let i = period + 1; i < data.length; i++) {
+                let change = data[i].close - data[i-1].close;
+                let gain = change > 0 ? change : 0;
+                let loss = change < 0 ? -change : 0;
+                avgGain = (avgGain * (period - 1) + gain) / period;
+                avgLoss = (avgLoss * (period - 1) + loss) / period;
+                rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+                let val = 100 - (100 / (1 + rs));
+                res.push({time: data[i].time, value: val});
+            }
+            return res;
+        }
+
+        const LiveClock = () => {
+          const [t, setT] = useState(new Date());
+          useEffect(() => { const i = setInterval(() => setT(new Date()), 1000); return () => clearInterval(i); }, []);
+          return <span className="text-purple-200 text-sm md:text-base ios-text tracking-widest font-semibold">{t.toLocaleTimeString('ru-RU')}</span>;
+        };
+
+        const MiniChart = ({ data }) => {
+          if (!data || !Array.isArray(data) || data.length < 2) {
+            return <div className="w-full h-full flex items-center justify-center opacity-40 text-xs tracking-widest text-purple-400 font-bold">СИНХР.</div>;
+          }
+          const chartData = data.slice(-30);
+          const min = Math.min(...chartData.map(d => d.low));
+          const max = Math.max(...chartData.map(d => d.high));
+          const range = (max - min) || 1;
+          const width = 100, height = 40;
+          const candleWidth = width / chartData.length;
+
+          return (
+            <svg className="w-full h-full opacity-90" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
+              {chartData.map((c, i) => {
+                const isUp = c.close >= c.open;
+                const x = i * candleWidth;
+                const w = candleWidth * 0.7;
+                const oY = height - ((c.open - min) / range) * height;
+                const cY = height - ((c.close - min) / range) * height;
+                const hY = height - ((c.high - min) / range) * height;
+                const lY = height - ((c.low - min) / range) * height;
+                return (
+                  <g key={i}>
+                    <line x1={x + w / 2} y1={hY} x2={x + w / 2} y2={lY} stroke={isUp ? "#d8b4fe" : "#7e22ce"} strokeWidth="0.8" />
+                    <rect x={x} y={isUp ? cY : oY} width={w} height={Math.max(Math.abs(cY - oY), 0.8)} fill={isUp ? "#d8b4fe" : "transparent"} stroke={isUp ? "none" : "#7e22ce"} strokeWidth="0.8" rx="0.5" />
+                  </g>
+                );
+              })}
+            </svg>
+          );
+        };
+
+        const Speedometer = ({ value, label, colorHex = "#a855f7", glow = false }) => {
+          const safeValue = isNaN(value) ? 50 : Math.max(0, Math.min(100, value));
+          const angle = -90 + (safeValue / 100) * 180;
+          const radius = 40;
+          const circumference = Math.PI * radius;
+          const strokeDashoffset = circumference - (safeValue / 100) * circumference;
+
+          return (
+            <div className="flex flex-col items-center flex-1 relative px-0.5 group pt-1">
+              <svg viewBox="0 0 100 55" className="w-10 h-6 md:w-12 md:h-7 overflow-visible mt-1">
+                <defs>
+                    <filter id={`glow-${label.replace(/\s+/g, '')}`}>
+                        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                        <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                </defs>
+                {[0, 25, 50, 75, 100].map(tick => {
+                   const a = -Math.PI + (tick/100)*Math.PI;
+                   return <line key={tick} x1={50 + 36 * Math.cos(a)} y1={50 + 36 * Math.sin(a)} x2={50 + 44 * Math.cos(a)} y2={50 + 44 * Math.sin(a)} stroke="rgba(216, 180, 254, 0.2)" strokeWidth="1.5" strokeLinecap="round" />
+                })}
+                <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="rgba(216, 180, 254, 0.1)" strokeWidth="4" strokeLinecap="round" />
+                <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke={colorHex} strokeWidth="4" strokeLinecap="round"
+                      strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
+                      style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1)' }} filter={glow ? `url(#glow-${label.replace(/\s+/g, '')})` : "none"} />
+                <g style={{ transform: `rotate(${angle}deg)`, transformOrigin: '50px 50px', transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+                  <polygon points="48.5,50 51.5,50 50,15" fill={colorHex} />
+                  <circle cx="50" cy="50" r="5" fill={colorHex} />
+                  <circle cx="50" cy="50" r="2" fill="#0b0410" />
+                </g>
+              </svg>
+              <div className={`text-base md:text-lg mt-1.5 font-bold leading-none oswald-font ${glow ? 'text-white drop-shadow-[0_0_5px_currentColor]' : 'text-purple-200'}`} style={{color: glow ? colorHex : ''}}>{Math.round(safeValue)}</div>
+              <div className="text-[9px] md:text-[10px] text-purple-300/80 tracking-wider leading-none text-center font-bold mt-1 uppercase">{label}</div>
+            </div>
+          );
+        };
+        
+        const VolumetricArrow = ({ type }) => {
+          const isUp = type === 'CALL';
+          return (
+            <div className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center animate-arrow-premium">
+               <svg viewBox="0 0 24 24" className={`w-full h-full fill-current ${isUp ? 'text-[#a855f7]' : 'text-[#f43f5e]'}`}>
+                  <path d={isUp ? "M12 2l-10 11h7v9h6v-9h7z" : "M12 22l10-11h-7v-9h-6v9h-7z"} />
+               </svg>
+            </div>
+          );
+        };
+
+        const OrderBook = ({ price }) => {
+          const p = price || 1.05000;
+          return (
+            <div className="flex flex-col font-mono text-purple-200 border-l border-purple-500/20 px-3 justify-center h-full w-full">
+              <div className="flex justify-between text-purple-400/80 mb-1 border-b border-purple-500/20 pb-1 text-[10px] md:text-xs tracking-widest font-semibold oswald-font">
+                <span>ЦЕНА</span><span>ОБЪЕМ</span>
+              </div>
+              <div className="space-y-0.5 mt-1">
+                {[...Array(2)].map((_, i) => (
+                  <div key={`ask-${i}`} className="flex justify-between text-[10px] md:text-xs text-purple-300/70 tracking-wider">
+                    <span>{(p + (3 - i) * 0.0001).toFixed(5)}</span>
+                    <span className="opacity-50">{Math.floor(Math.random() * 50 + 10)}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between text-white bg-purple-600/70 border border-purple-400/60 my-1.5 px-2 py-0.5 text-xs md:text-sm font-bold shadow-[0_0_15px_rgba(168,85,247,0.6)] rounded-md">
+                  <span>{p.toFixed(5)}</span>
+                  <span>{Math.floor(Math.random() * 100 + 50)}</span>
+                </div>
+                {[...Array(2)].map((_, i) => (
+                  <div key={`bid-${i}`} className="flex justify-between text-[10px] md:text-xs text-purple-300/70 tracking-wider">
+                    <span>{(p - (i + 1) * 0.0001).toFixed(5)}</span>
+                    <span className="opacity-50">{Math.floor(Math.random() * 50 + 10)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        };
+
+        const App = () => {
+          const [isStarted, setIsStarted] = useState(false);
+          const [appPhase, setAppPhase] = useState('СИНХРОНИЗАЦИЯ...');
+          const [viewMode, setViewMode] = useState('SCREENER'); 
+          const [scanIndex, setScanIndex] = useState(-1);
+          const [asset, setAsset] = useState(ASSETS[0]);
+          const [sparklines, setSparklines] = useState({});
+          const [signal, setSignal] = useState(null);
+          const [countdown, setCountdown] = useState(null);
+          const [logs, setLogs] = useState([]);
+          const [currentTF, setCurrentTF] = useState('1M');
+          
+          // Засекреченные метрики
+          const [metrics, setMetrics] = useState({ globalTrend: 50, strengthIdx: 50, filterLevel: 1.0, aiConfidence: 0 });
+          const [newsHeadlines, setNewsHeadlines] = useState(["ОЖИДАНИЕ ДАННЫХ..."]);
+          const [tradeStats, setTradeStats] = useState({ wins: 0, losses: 0, winRate: 0 });
+          
+          const [statusColorClass, setStatusColorClass] = useState('text-purple-300');
+          
+          const chartContainerRef = useRef(null);
+          const chartInstance = useRef(null);
+          const candleSeries = useRef(null);
+          const extraSeriesRef = useRef([]); 
+          const priceLinesRef = useRef([]);  
+          
+          const audioCtx = useRef(null);
+          const engineActive = useRef(false);
+          const currentPrice = useRef(null);
+          const statsRef = useRef({ wins: 0, losses: 0 });
+          const filterStrictness = useRef(1.0); 
+
+          const logsContainerRef = useRef(null); 
+
+          useEffect(() => {
+            if(!isStarted) return;
+            const interval = setInterval(() => {
+                setMetrics(prev => ({
+                    ...prev,
+                    aiConfidence: prev.aiConfidence > 0 ? Math.max(0, Math.min(100, prev.aiConfidence + (Math.random() * 2 - 1))) : 0
+                }));
+            }, 800);
+            return () => clearInterval(interval);
+          }, [isStarted]);
+
+          useEffect(() => {
+              const loadSparklines = async () => {
+                  const initialData = {};
+                  const promises = ASSETS.map(async (a) => {
+                      const data = await ScannerAPI.getCandles(a.symbol, 30, 60);
+                      if (data && data.length > 0) return { symbol: a.symbol, data };
+                      return null;
+                  });
+                  const results = await Promise.all(promises);
+                  results.forEach(r => { if(r) initialData[r.symbol] = r.data; });
+                  setSparklines(initialData);
+              };
+              loadSparklines();
+          }, []);
+
+          useEffect(() => {
+            const fetchNews = async () => {
+                try {
+                    let response = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://lenta.ru/rss/news');
+                    let data = await response.json();
+                    if (data && data.items && data.items.length > 0) {
+                        setNewsHeadlines(data.items.slice(0, 15).map(item => item.title)); 
+                        return;
+                    }
+                    throw new Error("API failed");
+                } catch (error) { 
+                    setNewsHeadlines(FALLBACK_NEWS); 
+                }
+            };
+            fetchNews();
+            const newsInterval = setInterval(fetchNews, 15 * 60 * 1000); 
+            return () => clearInterval(newsInterval);
+          }, []);
+
+          const addLog = (msg, isAi = false) => {
+            const prefix = isAi ? 'ИИ АНАЛИЗ:' : 'СИСТЕМА:';
+            setLogs(p => [`${prefix} ${msg}`, ...p].slice(0, 5)); 
+          };
+
+          const playSound = (type) => {
+            if (!audioCtx.current) return;
+            const ctx = audioCtx.current;
+            if (ctx.state === 'suspended') ctx.resume();
+            
+            const playTone = (freq, oscType, dur, vol, delay = 0) => {
+                try {
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    o.type = oscType;
+                    o.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+                    g.gain.setValueAtTime(0, ctx.currentTime + delay);
+                    g.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.02);
+                    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+                    o.connect(g); g.connect(ctx.destination);
+                    o.start(ctx.currentTime + delay);
+                    o.stop(ctx.currentTime + delay + dur);
+                } catch (e) {}
+            };
+
+            if (type === 'scan') playTone(1200 + Math.random()*200, 'sine', 0.02, 0.003);
+            if (type === 'found') playTone(600, 'triangle', 0.1, 0.02);
+            if (type === 'tf_change') playTone(800, 'sine', 0.1, 0.015);
+            if (type === 'start') { 
+                playTone(523.25, 'sine', 0.4, 0.02); 
+                playTone(659.25, 'sine', 0.5, 0.02, 0.1); 
+                playTone(783.99, 'sine', 0.6, 0.03, 0.2); 
+            }
+            if (type === 'win') { 
+                playTone(523.25, 'triangle', 0.4, 0.03); 
+                playTone(659.25, 'triangle', 0.5, 0.03, 0.1); 
+                playTone(783.99, 'triangle', 0.8, 0.04, 0.2); 
+            }
+            if (type === 'loss') { 
+                playTone(300, 'sawtooth', 0.4, 0.02); 
+                playTone(250, 'sawtooth', 0.6, 0.03, 0.2); 
+            }
+            if (type === 'cancel') {
+                playTone(400, 'square', 0.1, 0.03); 
+                playTone(300, 'square', 0.2, 0.03, 0.15); 
+            }
+          };
+
+          const speak = (text) => new Promise(res => {
+            if (!window.speechSynthesis) return res();
+            window.speechSynthesis.cancel(); 
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'ru-RU'; 
+            u.rate = 1.05; 
+            u.pitch = 0.95; 
+            
+            let resolved = false;
+            let fallbackTimer;
+
+            const resolveOnce = () => {
+                if (!resolved) {
+                    resolved = true;
+                    clearTimeout(fallbackTimer);
+                    setTimeout(res, 200); 
+                }
+            };
+
+            u.onend = resolveOnce; 
+            u.onerror = resolveOnce;
+            
+            try {
+                window.speechSynthesis.speak(u);
+            } catch(e) { resolveOnce(); }
+            
+            fallbackTimer = setTimeout(resolveOnce, Math.max(3000, text.length * 85)); 
+          });
+
+          const initChart = async () => {
+            if (!chartContainerRef.current) return;
+            if (!window.LightweightCharts) {
+              await new Promise(resolve => {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js';
+                script.onload = resolve; document.head.appendChild(script);
+              });
+            }
+
+            if (chartInstance.current) {
+                clearChartExtras();
+                if(candleSeries.current) {
+                    try { candleSeries.current.setMarkers([]); } catch(e){}
+                }
+                return;
+            }
+
+            try {
+                const mainChart = window.LightweightCharts.createChart(chartContainerRef.current, {
+                  autoSize: true,
+                  layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#d8b4fe', fontFamily: 'Montserrat' },
+                  grid: { vertLines: { color: 'rgba(168, 85, 247, 0.05)' }, horzLines: { color: 'rgba(168, 85, 247, 0.05)' } },
+                  timeScale: { borderVisible: false, timeVisible: true, secondsVisible: false },
+                  rightPriceScale: { borderVisible: false }
+                });
+
+                candleSeries.current = mainChart.addCandlestickSeries({ 
+                  upColor: '#d8b4fe', 
+                  downColor: 'transparent', 
+                  borderVisible: true, 
+                  borderUpColor: '#d8b4fe', 
+                  borderDownColor: '#f43f5e', 
+                  wickUpColor: '#d8b4fe', 
+                  wickDownColor: '#f43f5e'
+                });
+
+                chartInstance.current = mainChart;
+            } catch(e) {
+                console.error("Ошибка инициализации графика", e);
+            }
+          };
+
+          const clearChartExtras = () => {
+              if (!chartInstance.current || !candleSeries.current) return;
+              
+              priceLinesRef.current.forEach(l => {
+                  try { candleSeries.current.removePriceLine(l); } catch(e){}
+              });
+              priceLinesRef.current = [];
+              
+              extraSeriesRef.current.forEach(s => {
+                  try { chartInstance.current.removeSeries(s); } catch(e){}
+              });
+              extraSeriesRef.current = [];
+          };
+
+          // Рисуем линии, но не подписываем их реальными именами
+          const drawIndicators = (fastData, slowData, trendData) => {
+              clearChartExtras();
+              let fastSeries, slowSeries, tSeries;
+              
+              try {
+                  tSeries = chartInstance.current.addLineSeries({ 
+                      color: 'rgba(250, 204, 21, 0.3)', 
+                      lineWidth: 3, 
+                      lineStyle: 2,
+                      title: 'ГЛОБ. ТРЕНД' 
+                  });
+                  tSeries.setData(trendData);
+                  extraSeriesRef.current.push(tSeries);
+
+                  fastSeries = chartInstance.current.addLineSeries({ 
+                      color: '#ffffff', 
+                      lineWidth: 2, 
+                      title: 'БЫСТРЫЙ ИМПУЛЬС' 
+                  });
+                  fastSeries.setData(fastData);
+                  extraSeriesRef.current.push(fastSeries);
+
+                  slowSeries = chartInstance.current.addLineSeries({ 
+                      color: '#a855f7', 
+                      lineWidth: 2, 
+                      title: 'БАЗА' 
+                  });
+                  slowSeries.setData(slowData);
+                  extraSeriesRef.current.push(slowSeries);
+              } catch(e) {}
+              
+              return { fastSeries, slowSeries, tSeries };
+          };
+
+          const drawEntryLine = (price) => {
+            if (!candleSeries.current) return;
+            try {
+                const line = candleSeries.current.createPriceLine({
+                    price: price,
+                    color: '#ffffff',
+                    lineWidth: 2,
+                    lineStyle: 3,
+                    axisLabelVisible: true,
+                    title: `ВХОД`
+                });
+                priceLinesRef.current.push(line);
+            } catch(e) {}
+          };
+
+          const updateStatus = (phase, colorClass) => {
+              setAppPhase(phase);
+              setStatusColorClass(colorClass);
+          };
+
+          const runTerminalEngine = async () => {
+            if (engineActive.current) return;
+            engineActive.current = true;
+
+            if (audioCtx.current && audioCtx.current.state === 'suspended') {
+                await audioCtx.current.resume();
+            }
+
+            await speak('Алгоритм Гордеева активирован. Запущен анализ глобального тренда и поиск импульсных пробоев.');
+            await new Promise(r => setTimeout(r, 500)); 
+            
+            while (engineActive.current) {
+              try {
+                  updateStatus('СКАНИРОВАНИЕ РЫНКА...', 'text-purple-300');
+                  setViewMode('SCREENER');
+                  setSignal(null);
+                  setCurrentTF('1M');
+                  
+                  setMetrics(prev => ({ ...prev, filterLevel: filterStrictness.current * 10, aiConfidence: 10 }));
+
+                  const candidates = [...ASSETS].sort(() => Math.random() - 0.5);
+                  let signalFound = false;
+
+                  for(let cur of candidates) {
+                    if (!engineActive.current) break;
+                    setScanIndex(ASSETS.indexOf(cur));
+                    playSound('scan');
+                    
+                    const data = await ScannerAPI.getCandles(cur.symbol, 250, 60); 
+                    
+                    if (data && data.length > 200) {
+                      setSparklines(prev => ({...prev, [cur.symbol]: data}));
+
+                      const atr = calcVol(data, 14);
+                      const baseFilter = calcBaseFilter(data, 200); // Бывшая SMA 200
+                      const fastLine = calcMomentum(data, 5);     // Бывшая EMA 5
+                      const slowLine = calcMomentum(data, 13);    // Бывшая EMA 13
+                      const strength = calcStrength(data, 14);    // Бывший RSI
+
+                      const baseMap = new Map(baseFilter.map(i => [i.time, i.value]));
+                      const fastMap = new Map(fastLine.map(i => [i.time, i.value]));
+                      const slowMap = new Map(slowLine.map(i => [i.time, i.value]));
+                      const strMap = new Map(strength.map(i => [i.time, i.value]));
+
+                      const lastIdx = data.length - 1;
+                      
+                      let isCall = false;
+                      let isPut = false;
+                      let triggerCandleIdx = lastIdx;
+
+                      // ЗАЛОЖЕННАЯ ЛОГИКА PRO MAX
+                      for (let j = 0; j < 3; j++) {
+                          const idx = lastIdx - j;
+                          if (idx < 200) continue; 
+
+                          const currTime = data[idx].time;
+                          const prevTime = data[idx - 1].time;
+
+                          const cPrice = data[idx].close;
+                          const cOpen = data[idx].open;
+                          const cHigh = data[idx].high;
+                          const cLow = data[idx].low;
+                          
+                          const cBase = baseMap.get(currTime);
+                          const cFast = fastMap.get(currTime);
+                          const pFast = fastMap.get(prevTime);
+                          const pFast_2 = fastMap.get(data[idx - 2]?.time);
+                          const cSlow = slowMap.get(currTime);
+                          const pSlow = slowMap.get(prevTime);
+                          const pSlow_2 = slowMap.get(data[idx - 2]?.time);
+                          const cStr = strMap.get(currTime);
+                          
+                          if (cBase !== undefined && cFast !== undefined && pFast !== undefined && pFast_2 !== undefined && cSlow !== undefined && pSlow !== undefined && pSlow_2 !== undefined && cStr !== undefined) {
+                              
+                              const isSlowNotAgainstCall = cSlow >= pSlow;
+                              const isSlowNotAgainstPut = cSlow <= pSlow;
+
+                              const wasSqueezed = Math.abs(pFast - pSlow) < (atr * 1.5);
+
+                              const candleTotalSize = cHigh - cLow;
+                              const upperWick = cHigh - Math.max(cOpen, cPrice);
+                              const lowerWick = Math.min(cOpen, cPrice) - cLow;
+
+                              if (cPrice > cBase && cStr > 40 && cStr < 80 && isSlowNotAgainstCall && wasSqueezed && upperWick < (candleTotalSize * 0.45)) {
+                                  if (pFast <= pSlow && cFast > cSlow) {
+                                      isCall = true; triggerCandleIdx = idx; break;
+                                  }
+                              }
+                              
+                              if (cPrice < cBase && cStr < 60 && cStr > 20 && isSlowNotAgainstPut && wasSqueezed && lowerWick < (candleTotalSize * 0.45)) {
+                                  if (pFast >= pSlow && cFast < cSlow) {
+                                      isPut = true; triggerCandleIdx = idx; break;
+                                  }
+                              }
+                          }
+                      }
+
+                      if (isCall || isPut) {
+                          signalFound = true;
+                          
+                          setAsset(cur);
+                          setViewMode('DETAIL');
+                          
+                          const currentStrength = Math.round(strMap.get(data[lastIdx].time) || 50);
+                          const priceVsBase = data[lastIdx].close > baseMap.get(data[lastIdx].time) ? 100 : 0;
+                          
+                          setMetrics(prev => ({ ...prev, globalTrend: priceVsBase, strengthIdx: currentStrength }));
+
+                          await initChart();
+                          playSound('found');
+                          
+                          if(candleSeries.current) {
+                              try { 
+                                  candleSeries.current.setData(data); 
+                                  candleSeries.current.setMarkers([
+                                      {
+                                          time: data[triggerCandleIdx].time,
+                                          position: isCall ? 'belowBar' : 'aboveBar',
+                                          color: isCall ? '#e9d5ff' : '#f43f5e',
+                                          shape: isCall ? 'arrowUp' : 'arrowDown',
+                                          text: isCall ? 'ВХОД' : 'ВХОД',
+                                          size: 2
+                                      }
+                                  ]);
+                              } catch (e) {}
+                          }
+
+                          const smasRefs = drawIndicators(fastLine, slowLine, baseFilter);
+                          try { chartInstance.current.timeScale().fitContent(); } catch(e) {}
+                          currentPrice.current = data[lastIdx].close;
+                          
+                          const directionText = isCall ? "повышение" : "понижение";
+                          
+                          updateStatus(`ГОТОВЬТЕ: ${cur.name} (1 МИН)`, 'text-yellow-400 font-bold animate-pulse');
+                          addLog(`[ПРО ФИЛЬТР] ТРЕНД И ИНДЕКС СИЛЫ ПОДТВЕРЖДЕНЫ`, true);
+                          addLog(`[ИИ АНАЛИЗ] ЗАФИКСИРОВАН ПРОБОЙ ЛИНИЙ АЛГОРИТМА`, true);
+
+                          await speak(`Внимание. Зафиксирован алгоритмический пробой. Подготовьте валютную пару ${cur.voiceName}. Время одна минута. Направление на ${directionText}.`);
+
+                          for(let w=6; w>0; w--) {
+                              updateStatus(`ОТКРЫВАЙТЕ ПАРУ У БРОКЕРА... ${w}С`, 'text-yellow-300 font-bold');
+                              playSound('scan');
+                              await new Promise(r => setTimeout(r, 1000));
+                          }
+
+                          let tradeCancelled = false;
+                          updateStatus('СНАЙПЕР: ФИНАЛЬНЫЙ ЧЕК', 'text-purple-300 font-bold animate-pulse');
+                          addLog(`[СНАЙПЕР] ЖДЕМ ПОДТВЕРЖДЕНИЯ...`, true);
+
+                          for(let w=2; w>0; w--) {
+                              await new Promise(r => setTimeout(r, 1000));
+                              try {
+                                  const liveData = await ScannerAPI.getCandles(cur.symbol, 3, 60);
+                                  const liveTick = liveData[liveData.length - 1];
+                                  
+                                  if (liveTick && liveTick.time >= data[data.length - 1].time) {
+                                      let tIdx = data.findIndex(d => d.time === liveTick.time);
+                                      if (tIdx !== -1) data[tIdx] = liveTick;
+                                      else data.push(liveTick);
+
+                                      currentPrice.current = liveTick.close;
+                                      if (candleSeries.current) {
+                                          try { candleSeries.current.update(liveTick); } catch(e){}
+                                      }
+                                      
+                                      const nFast = calcMomentum(data, 5);
+                                      const nSlow = calcMomentum(data, 13);
+                                      
+                                      const lFast = nFast[nFast.length - 1]?.value || fastMap.get(data[lastIdx].time);
+                                      const lSlow = nSlow[nSlow.length - 1]?.value || slowMap.get(data[lastIdx].time);
+                                      
+                                      if (isCall && lFast < lSlow) tradeCancelled = true;
+                                      if (isPut && lFast > lSlow) tradeCancelled = true;
+                                  }
+                              } catch(e) {}
+                          }
+
+                          if (tradeCancelled) {
+                              playSound('cancel');
+                              updateStatus('ОТМЕНА: ИМПУЛЬС ИСЧЕЗ', 'text-red-400 font-bold');
+                              addLog(`СИГНАЛ ОТМЕНЕН: ЛИНИИ РАЗОШЛИСЬ`, true);
+                              await speak("Внимание. Отмена. Импульс пропал. Возвращаюсь к сканированию рынка.");
+                              
+                              await new Promise(r => setTimeout(r, 4000));
+                              setViewMode('SCREENER');
+                              updateStatus('ПЕРЕЗАПУСК СКАНИРОВАНИЯ...', 'text-purple-300');
+                              await new Promise(r => setTimeout(r, 2000));
+                              break; 
+                          }
+
+                          playSound('start');
+                          updateStatus('СИГНАЛ АКТИВЕН', 'text-purple-300 font-bold');
+                          
+                          const entryPrice = currentPrice.current;
+                          const expMins = 1;
+                          
+                          setSignal({ type: isCall ? 'CALL' : 'PUT', exp: expMins, entryPrice });
+                          drawEntryLine(entryPrice);
+
+                          addLog(`СИГНАЛ ВЫПОЛНЕН: ВХОД ${isCall ? 'ВВЕРХ' : 'ВНИЗ'} НА 1 МИН.`, true);
+
+                          speak(`Пробой подтвержден. Вход на ${directionText}! Время одна минута. Жмите кнопку!`);
+
+                          let currentNewsPool = [...newsHeadlines];
+                          let newsReadInThisTrade = false;
+                          const readRandomNews = () => {
+                             if(currentNewsPool.length === 0) currentNewsPool = [...newsHeadlines];
+                             const idx = Math.floor(Math.random() * currentNewsPool.length);
+                             const textToRead = currentNewsPool.splice(idx, 1)[0].toLowerCase(); 
+                             
+                             try {
+                                 if(window.speechSynthesis && !window.speechSynthesis.speaking) {
+                                     const u = new SpeechSynthesisUtterance("Сводка: " + textToRead);
+                                     u.lang = 'ru-RU'; u.rate = 1.15; u.pitch = 0.95;
+                                     window.speechSynthesis.speak(u);
+                                 }
+                             } catch(e){}
+                          };
+
+                          let expirySeconds = expMins * 60;
+                          let isLive = true;
+                          
+                          const liveChartTask = (async () => {
+                            let localLastTime = 0;
+                            while (isLive && engineActive.current) {
+                              await new Promise(r => setTimeout(r, 1500));
+                              if (!isLive) break;
+                              try {
+                                const liveTickArray = await ScannerAPI.getCandles(cur.symbol, 2, 60);
+                                if (liveTickArray && liveTickArray.length > 0 && candleSeries.current) {
+                                  liveTickArray.forEach(tick => {
+                                    if (tick.time >= localLastTime && !isNaN(tick.close)) {
+                                      try {
+                                          candleSeries.current.update(tick);
+                                          currentPrice.current = tick.close;
+                                          localLastTime = Math.max(localLastTime, tick.time);
+                                      } catch (err) {}
+                                    }
+                                  });
+                                }
+                              } catch (e) {}
+                            }
+                          })();
+
+                          while(expirySeconds > 0) {
+                            setCountdown(expirySeconds);
+                            
+                            if (expirySeconds === Math.floor((expMins * 60) / 2) && !newsReadInThisTrade) {
+                                 readRandomNews();
+                                 newsReadInThisTrade = true;
+                            }
+
+                            await new Promise(r => setTimeout(r, 1000));
+                            expirySeconds--;
+                          }
+                          
+                          isLive = false;
+                          setCountdown(null);
+                          updateStatus('АНАЛИЗ РЕЗУЛЬТАТА', 'text-slate-400');
+
+                          const resultData = await ScannerAPI.getCandles(cur.symbol, 1, 60);
+                          let finalPrice = entryPrice;
+                          if (resultData && resultData.length > 0) {
+                              finalPrice = resultData[resultData.length - 1].close;
+                          }
+                          let isWin = false;
+
+                          if ((isCall && finalPrice > entryPrice) || (isPut && finalPrice < entryPrice)) isWin = true;
+                          else if (finalPrice === entryPrice) isWin = true; 
+
+                          if (isWin) {
+                            playSound('win');
+                            statsRef.current.wins++;
+                            filterStrictness.current = Math.max(1.0, filterStrictness.current - 0.2);
+                          } else {
+                            playSound('loss');
+                            statsRef.current.losses++;
+                            filterStrictness.current = Math.min(5.0, filterStrictness.current + 1.0);
+                            addLog(`АДАПТАЦИЯ ИИ: ФИЛЬТРЫ ТРЕНДА УСИЛЕНЫ ДО ${filterStrictness.current.toFixed(1)}`, true);
+                          }
+
+                          const newTotal = statsRef.current.wins + statsRef.current.losses;
+                          const newWinRate = Math.round((statsRef.current.wins / newTotal) * 100);
+                          setTradeStats({ wins: statsRef.current.wins, losses: statsRef.current.losses, winRate: newWinRate });
+
+                          if (isWin) {
+                            addLog(`РЕЗУЛЬТАТ: ПЛЮС (+). ВЫХОД: ${finalPrice.toFixed(5)}`);
+                            await speak(`Плюс. Сделка успешно завершена. Текущий винрейт: ${newWinRate} процентов.`);
+                          } else {
+                            addLog(`РЕЗУЛЬТАТ: МИНУС (-).`);
+                            await speak(`Минус. Система улучшает качество сканирования и фильтр алгоритма.`);
+                          }
+
+                          setSignal(null);
+                          setMetrics(prev => ({ ...prev, aiConfidence: 0 }));
+                          await new Promise(r => setTimeout(r, 2000));
+                          break; 
+                      }
+                    }
+                  }
+                  if (!signalFound) await new Promise(r => setTimeout(r, 500)); 
+              } catch (e) {
+                  console.error("Сбой:", e);
+                  addLog("ПЕРЕЗАПУСК АЛГОРИТМА ЧЕРЕЗ 3 СЕК...", true);
+                  await new Promise(r => setTimeout(r, 3000));
+              }
+            }
+          };
+
+          const startTerminal = () => {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx.current = new AudioContext();
+            const osc = audioCtx.current.createOscillator();
+            osc.connect(audioCtx.current.destination);
+            osc.start(0); osc.stop(0.01);
+
+            if (window.speechSynthesis) {
+                const unlockUtterance = new SpeechSynthesisUtterance('');
+                window.speechSynthesis.speak(unlockUtterance);
+            }
+
+            setIsStarted(true);
+            runTerminalEngine();
+          };
+
+          if (!isStarted) {
+            return (
+              <div className="h-[100dvh] w-screen flex flex-col items-center justify-center relative overflow-hidden text-purple-100">
+                <div className="bg-orb-1 pointer-events-none"></div>
+                <div className="bg-orb-2 pointer-events-none"></div>
+                <div className="bg-orb-3 pointer-events-none"></div>
+                <div className="absolute inset-0 bg-grid-pattern pointer-events-none opacity-60"></div>
+                
+                <div className="max-w-[90%] sm:max-w-md w-full p-8 md:p-12 text-center relative z-10 glass-panel-heavy rounded-[2rem] premium-glow flex flex-col items-center">
+                  <h1 className="text-4xl md:text-5xl text-white leading-none mb-3 oswald-font font-semibold tracking-wide">
+                    СТРАТЕГИЯ <br/><span className="text-gradient font-bold drop-shadow-[0_0_10px_rgba(216,180,254,0.5)]">ГОРДЕЕВА</span>
+                  </h1>
+                  <p className="text-sm md:text-base text-purple-200/90 tracking-widest mb-10 font-medium leading-tight">
+                    АДАПТИВНЫЙ ИИ: PRO MAX АЛГОРИТМ
+                  </p>
+                  <button 
+                    onClick={startTerminal} 
+                    className="w-full py-4 bg-purple-600/90 hover:bg-purple-500 hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] border border-purple-400/50 shadow-[0_10px_25px_rgba(168,85,247,0.4)] text-white text-xl md:text-2xl transition-all duration-300 oswald-font font-bold active:scale-95 rounded-2xl cursor-pointer flex items-center justify-center gap-3 group relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+                    <Cpu size={24} className="text-purple-100 group-hover:animate-spin relative z-10" /> 
+                    <span className="relative z-10">ЗАПУСК СИСТЕМЫ</span>
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div className="h-[100dvh] w-screen flex flex-col text-purple-100 relative overflow-hidden selection:bg-purple-500/30">
+              <div className="bg-orb-1 pointer-events-none opacity-40"></div>
+              <div className="bg-orb-2 pointer-events-none opacity-40"></div>
+              <div className="absolute inset-0 bg-grid-pattern pointer-events-none z-0 opacity-50"></div>
+
+              {/* Ticker */}
+              <div className="h-6 md:h-8 bg-[#0a0514]/95 border-b border-purple-900/60 z-50 overflow-hidden flex items-center shrink-0 w-full relative backdrop-blur-xl">
+                <div className="absolute left-0 h-full bg-[#05020a] text-purple-300 px-3 md:px-4 flex items-center gap-2 z-20 text-[10px] md:text-xs tracking-widest shadow-[5px_0_20px_rgba(0,0,0,0.8)] border-r border-purple-900/60 font-bold oswald-font">
+                  <Globe size={14} className="hidden sm:block text-purple-400" /> СВОДКА
+                </div>
+                <div className="flex-1 overflow-hidden relative h-full flex items-center ml-[90px] sm:ml-[110px]">
+                  <div className="ticker-wrapper text-[10px] md:text-xs text-purple-200/90 tracking-widest pt-0.5 font-medium oswald-font">
+                    {[...Array(2)].map((_, idx) => (
+                      <div key={idx} className="flex gap-10 md:gap-16 whitespace-nowrap pr-10 md:pr-16">
+                        {newsHeadlines.map((headline, i) => (
+                          <span key={i} className="flex items-center">
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span>
+                            {headline.toUpperCase()}
+                          </span>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Header */}
+              <header className="h-auto md:h-14 py-2 md:py-0 flex flex-col md:flex-row items-start md:items-center justify-between px-3 md:px-5 shrink-0 z-40 glass-panel gap-1 md:gap-0">
+                <div className="flex flex-col justify-center w-full md:w-auto">
+                  <div className="flex justify-between items-center md:block">
+                      <h1 className="text-xl md:text-2xl text-white leading-none font-semibold flex items-center gap-2 oswald-font tracking-wide">
+                        <Cpu size={22} className="text-purple-400 drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]" /> 
+                        СТРАТЕГИЯ <span className="text-gradient font-bold hidden sm:inline">ГОРДЕЕВА</span>
+                      </h1>
+                      <div className="text-[10px] text-purple-100 px-2 py-0.5 border border-purple-500/50 bg-purple-900/50 rounded flex items-center shadow-[0_0_10px_rgba(168,85,247,0.3)] oswald-font tracking-wider block md:hidden font-bold">
+                        {appPhase}
+                      </div>
+                  </div>
+                  <div className="text-[9px] md:text-[10px] text-purple-300/70 tracking-[0.15em] mt-1 font-semibold leading-none uppercase">
+                    Секретный алгоритм • Фильтр тренда включен
+                  </div>
+                </div>
+                <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-1 md:gap-1.5">
+                  <div className="text-xs md:text-sm text-white px-3 py-0.5 border border-purple-500/50 bg-purple-800/50 shadow-[0_0_15px_rgba(168,85,247,0.4)] rounded-lg oswald-font tracking-wider hidden md:block font-bold">
+                    {appPhase}
+                  </div>
+                  <div className="flex gap-4 items-center tracking-wider w-full md:w-auto justify-between md:justify-end">
+                    <span className="text-[9px] md:text-[10px] text-purple-200/90 flex items-center gap-1.5 font-bold uppercase">
+                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
+                      АЛГОРИТМ ОНЛАЙН
+                    </span>
+                    <LiveClock />
+                  </div>
+                </div>
+              </header>
+
+              {/* Main Workspace */}
+              <main className="flex-1 flex flex-col md:flex-row p-2 md:p-3 gap-2 md:gap-3 overflow-hidden z-10">
+                
+                {/* Left Area (Chart / Grid) */}
+                <div className="w-full md:flex-1 h-[50vh] md:h-full glass-panel-heavy rounded-2xl md:rounded-[2rem] relative overflow-hidden flex flex-col shrink-0">
+                  
+                  {/* Screener View */}
+                  <div className={`absolute inset-0 z-30 transition-all duration-700 bg-[#05020a]/95 backdrop-blur-2xl ${viewMode === 'SCREENER' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                    <div className="h-full w-full grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 xl:grid-cols-11 auto-rows-fr gap-1.5 md:gap-2 p-2 md:p-3">
+                      {ASSETS.map((a, i) => (
+                        <div key={a.symbol} className={`relative flex flex-col p-1.5 md:p-2 rounded-xl transition-all duration-300 glass-card ${i === scanIndex ? 'border-purple-400 shadow-[0_0_20px_rgba(192,132,252,0.4)] scale-[1.05] z-10 bg-purple-900/20' : 'border-purple-800/30'}`}>
+                          <div className="text-[9px] md:text-[10px] tracking-wider mb-1 text-purple-100 flex justify-between font-bold oswald-font">
+                            <span className="truncate">{a.name}</span>
+                            {i === scanIndex && <Cpu size={10} className="text-purple-300 animate-pulse shrink-0" />}
+                          </div>
+                          <div className="flex-1 overflow-hidden rounded-md bg-[#000000]/60 border border-purple-900/30">
+                            <MiniChart data={sparklines[a.symbol]} />
+                          </div>
+                          {i === scanIndex && <div className="absolute inset-0 scanline-anim pointer-events-none rounded-xl" /> }
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Detail View */}
+                  <div className={`absolute inset-0 z-20 flex flex-col transition-all duration-700 bg-transparent ${viewMode === 'DETAIL' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                    <div className="absolute top-4 left-4 z-40 flex flex-col gap-2">
+                      <div className="glass-card p-3 md:p-4 rounded-2xl min-w-[140px] backdrop-blur-3xl border-purple-400/50 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+                        <div className="text-[9px] md:text-[10px] text-purple-300 tracking-widest mb-1 flex items-center gap-1.5 font-bold uppercase">
+                          <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"/> АНАЛИЗ ГРАФИКА
+                        </div>
+                        <div className="text-3xl md:text-4xl tracking-wider text-white leading-none pt-0.5 font-bold oswald-font drop-shadow-[0_2px_10px_rgba(216,180,254,0.3)]">{asset.name}</div>
+                        <div className="mt-2 text-xs text-purple-200 tracking-wider font-semibold flex items-center gap-1.5">
+                            ТАЙМФРЕЙМ: <span className="text-white font-bold bg-purple-600/80 px-2 py-0.5 rounded shadow-[0_0_10px_rgba(168,85,247,0.5)]">{currentTF}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex-1 relative w-full mt-24 md:mt-28 flex flex-col gap-2 px-3 pb-3 md:px-4 md:pb-4">
+                        <div className="flex-1 relative w-full rounded-2xl overflow-hidden shadow-[inset_0_0_50px_rgba(0,0,0,0.8)] bg-[#030106]/80 border border-purple-900/30">
+                            <div ref={chartContainerRef} className="absolute inset-0" />
+                        </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Area (Controls & Stats) */}
+                <div className="w-full md:w-[280px] lg:w-[320px] flex flex-col glass-panel-heavy rounded-2xl md:rounded-[2rem] overflow-hidden shrink-0 relative min-h-[50vh] md:h-full">
+                  
+                  <div className="border-b border-purple-800/40 p-2.5 bg-gradient-to-r from-purple-900/20 to-transparent flex justify-center items-center shrink-0 min-h-[40px]">
+                    <div className={`text-sm md:text-base oswald-font tracking-wider flex items-center gap-1.5 text-center leading-none transition-all duration-300 w-full justify-center font-bold ${statusColorClass}`}>
+                      {appPhase.includes('ПОДГОТОВ') ? (
+                        <span className="text-yellow-400 drop-shadow-[0_0_12px_rgba(250,204,21,0.9)] animate-pulse">{appPhase}</span>
+                      ) : appPhase.includes('СНАЙПЕР:') ? (
+                        <span className="text-fuchsia-300 drop-shadow-[0_0_12px_rgba(240,171,252,0.9)] animate-pulse">{appPhase}</span>
+                      ) : appPhase}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 flex flex-col p-2.5 md:p-3 gap-2.5 md:gap-3 overflow-y-hidden">
+                    
+                    <div className="grid grid-cols-4 gap-1.5 glass-card rounded-xl p-2 shrink-0 border-purple-500/20 bg-[#0a0514]/60">
+                       <Speedometer value={metrics.globalTrend} label="ТРЕНД" colorHex="#facc15" />
+                       <Speedometer value={metrics.strengthIdx} label="СИЛА" colorHex="#e9d5ff" glow={true} />
+                       <Speedometer value={metrics.filterLevel} label="ФИЛЬТР" colorHex="#38bdf8" />
+                       <Speedometer value={metrics.aiConfidence} label="% ИИ" colorHex="#c084fc" />
+                    </div>
+
+                    <div className="flex gap-2.5 h-24 md:h-28 shrink-0">
+                      <div className={`w-[45%] border rounded-xl flex flex-col items-center justify-center relative transition-all duration-500 glass-card bg-[#0a0514]/60 ${appPhase === 'СИГНАЛ АКТИВЕН' ? 'border-purple-400 shadow-[0_0_20px_rgba(192,132,252,0.5)]' : 'border-purple-800/30'}`}>
+                        {signal ? (
+                          <VolumetricArrow type={signal.type} />
+                        ) : (
+                          <div className="flex flex-col items-center opacity-30">
+                              <Cpu size={28} className="text-purple-300 mb-1.5" />
+                              <span className="text-[10px] md:text-xs tracking-widest font-bold text-purple-300 oswald-font">СТАТУС</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="w-[55%] rounded-xl overflow-hidden glass-card p-1.5 bg-[#0a0514]/80 border-purple-800/30">
+                        <OrderBook price={currentPrice.current} />
+                      </div>
+                    </div>
+
+                    <div className={`glass-card border rounded-2xl p-3.5 flex flex-col gap-2 shrink-0 relative overflow-hidden transition-all duration-700 bg-[#0a0514]/80 ${
+                        (tradeStats.wins + tradeStats.losses) > 0 
+                            ? (tradeStats.winRate >= 50 ? 'border-purple-500/50 shadow-[0_0_25px_rgba(168,85,247,0.25)]' : 'border-red-500/50 shadow-[0_0_25px_rgba(239,68,68,0.2)]') 
+                            : 'border-purple-800/30'
+                    }`}>
+                       <div className="flex justify-between items-center z-10 relative">
+                           <span className="text-xs md:text-sm text-purple-200 tracking-wider font-bold flex items-center gap-1.5 leading-none oswald-font">
+                              <TrendingUp size={16} className={(tradeStats.wins + tradeStats.losses) > 0 ? (tradeStats.winRate >= 50 ? "text-purple-400" : "text-red-400") : "text-purple-400"} /> 
+                              ВИНРЕЙТ СИСТЕМЫ
+                           </span>
+                           <span className={`text-2xl md:text-3xl font-bold tracking-widest ios-text leading-none oswald-font ${
+                               (tradeStats.wins + tradeStats.losses) > 0 ? (tradeStats.winRate >= 50 ? "text-purple-200" : "text-red-300") : "text-purple-300"
+                           }`}>
+                             {tradeStats.winRate}%
+                           </span>
+                       </div>
+                       
+                       <div className="w-full h-3.5 bg-[#000000] rounded-full flex overflow-hidden relative shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] mt-1.5 border border-purple-900/40">
+                           <div 
+                             className="h-full bg-gradient-to-r from-purple-700 to-purple-400 transition-all duration-1000 ease-out relative"
+                             style={{ 
+                                 width: `${(tradeStats.wins + tradeStats.losses) > 0 ? (tradeStats.wins / (tradeStats.wins + tradeStats.losses)) * 100 : 50}%`,
+                                 boxShadow: tradeStats.winRate >= 50 ? '0 0 12px rgba(192,132,252,0.8)' : 'none'
+                             }}
+                           >
+                              {tradeStats.winRate >= 50 && <div className="absolute inset-0 bg-white/20 w-full animate-pulse"></div>}
+                           </div>
+                           <div 
+                             className="h-full bg-gradient-to-r from-red-700 to-red-400 transition-all duration-1000 ease-out relative"
+                             style={{ 
+                                 width: `${(tradeStats.wins + tradeStats.losses) > 0 ? (tradeStats.losses / (tradeStats.wins + tradeStats.losses)) * 100 : 50}%`,
+                                 boxShadow: tradeStats.winRate < 50 && (tradeStats.wins + tradeStats.losses) > 0 ? '0 0 12px rgba(244,63,94,0.8)' : 'none'
+                             }}
+                           >
+                              {tradeStats.winRate < 50 && (tradeStats.wins + tradeStats.losses) > 0 && <div className="absolute inset-0 bg-white/20 w-full animate-pulse"></div>}
+                           </div>
+                       </div>
+
+                       <div className="flex justify-between items-center z-10 relative mt-2 oswald-font">
+                           <div className="flex flex-col">
+                               <span className="text-[9px] md:text-[10px] text-purple-300/60 tracking-widest font-semibold uppercase">ПРОФИТ</span>
+                               <span className="text-xl md:text-2xl text-purple-200 font-bold ios-text leading-none mt-0.5">{tradeStats.wins}</span>
+                           </div>
+                           <div className="flex flex-col items-end">
+                               <span className="text-[9px] md:text-[10px] text-purple-300/60 tracking-widest font-semibold uppercase">УБЫТОК</span>
+                               <span className="text-xl md:text-2xl text-red-400/90 font-bold ios-text leading-none mt-0.5">{tradeStats.losses}</span>
+                           </div>
+                       </div>
+                    </div>
+
+                    <div className="glass-card rounded-xl p-3 flex justify-between items-center shrink-0 relative overflow-hidden shadow-lg border-purple-500/30 bg-gradient-to-r from-[#0a0514] to-purple-900/20">
+                       <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[radial-gradient(ellipse_at_right,_rgba(192,132,252,0.15),_transparent)] pointer-events-none"></div>
+                       <div className="flex flex-col relative z-10">
+                          <span className="text-[9px] md:text-[10px] text-purple-200/70 tracking-widest font-semibold leading-none uppercase">ЦЕНА ВХОДА</span>
+                          <span className="text-xl md:text-2xl text-white mt-1.5 font-bold oswald-font leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                            {signal && signal.entryPrice ? signal.entryPrice.toFixed(5) : '---.-----'}
+                          </span>
+                       </div>
+                       <div className="flex flex-col items-end relative z-10">
+                          <span className="text-[9px] md:text-[10px] text-purple-200/70 tracking-widest flex items-center gap-1 font-semibold leading-none uppercase">
+                            <Clock size={10} className="text-purple-400"/> ЭКСПИРАЦИЯ
+                          </span>
+                          <span className="text-2xl md:text-3xl text-white mt-1 font-bold oswald-font tracking-widest leading-none drop-shadow-[0_0_8px_rgba(216,180,254,0.6)]">
+                            {countdown !== null ? `${Math.floor(countdown/60)}:${(countdown%60).toString().padStart(2,'0')}` : (signal && signal.exp ? `0${signal.exp}:00` : '--:--')}
+                          </span>
+                       </div>
+                    </div>
+
+                    <div ref={logsContainerRef} className="flex-1 glass-card rounded-xl p-3 overflow-hidden flex flex-col justify-start gap-1.5 border-purple-800/30 bg-[#05020a]/80 shadow-inner">
+                      {logs.map((l, i) => (
+                        <div key={i} className={`text-[10px] md:text-xs leading-snug tracking-wider font-semibold font-mono ${i === 0 ? 'text-purple-100 font-bold drop-shadow-[0_0_5px_rgba(216,180,254,0.5)] border-l-2 border-purple-400 pl-1.5' : 'text-purple-400/50'}`}>
+                          {l}
+                        </div>
+                      ))}
+                    </div>
+                    
+                  </div>
+                </div>
+              </main>
+
+              {/* Footer */}
+              <footer className="h-auto md:h-10 py-1.5 md:py-0 border-t border-purple-900/50 flex flex-row items-center justify-between px-3 md:px-5 shrink-0 glass-panel z-40 bg-[#05020a]/90">
+                <div className="flex items-center gap-2 text-purple-400/80 text-[9px] md:text-[10px] tracking-widest font-bold uppercase oswald-font">
+                  <Shield size={12} className="text-purple-500 hidden sm:block" /> 
+                  <span className="hidden sm:inline">СИСТЕМА ЗАЩИЩЕНА (ШИФРОВАНИЕ АЛГОРИТМА ОНЛАЙН)</span>
+                  <span className="inline sm:hidden">ЗАЩИТА АКТИВНА</span>
+                </div>
+                
+                <div className="flex items-center gap-2 oswald-font">
+                  <span className="text-purple-400/80 text-[9px] md:text-[10px] tracking-widest font-bold hidden sm:block uppercase">ЯДРО:</span>
+                  <span className="text-white text-[9px] md:text-[10px] px-2.5 py-1 rounded bg-gradient-to-r from-purple-800 to-purple-600 tracking-widest font-bold text-center shadow-[0_0_10px_rgba(168,85,247,0.4)] border border-purple-400/30">
+                    ГОРДЕЕВ ИНВЕСТ PRO MAX
+                  </span>
+                </div>
+              </footer>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
